@@ -39,7 +39,7 @@
             min-height: 100vh;
         }
 
-        /* ── шапка ── */
+        /* шапка */
         header {
             padding: 22px 40px;
             display: flex;
@@ -59,7 +59,7 @@
                 -webkit-text-fill-color: transparent;
             }
 
-        /* ── вкладки ── */
+        /* вкладки */
         .tabs {
             display: flex;
             gap: 4px;
@@ -91,13 +91,13 @@
                 color: var(--text);
             }
 
-        /* ── основная область ── */
+        /* основная область */
         .page {
             padding: 28px 40px;
             width: 100%;
         }
 
-        /* ── карточка ── */
+        /* карточка */
         .card {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -106,7 +106,7 @@
             margin-bottom: 16px;
         }
 
-        /* ── форма ── */
+        /* форма */
         .form-row {
             display: flex;
             flex-wrap: wrap;
@@ -146,7 +146,7 @@
             min-height: 60px;
         }
 
-        /* ── кнопки ── */
+        /* кнопки */
         .btn {
             font-family: 'Golos Text', sans-serif;
             font-size: 14px;
@@ -188,7 +188,7 @@
             font-size: 13px;
         }
 
-        /* ── таблица ── */
+        /*  таблица */
         .table-wrap {
             overflow-x: auto;
         }
@@ -222,7 +222,7 @@
             background: var(--surface2);
         }
 
-        /* ── badge isActive ── */
+        /* badge isActive */
         .badge {
             display: inline-block;
             padding: 2px 8px;
@@ -241,7 +241,7 @@
             color: var(--red);
         }
 
-        /* ── стикер дня ── */
+        /* стикер дня */
         .sticker {
             display: inline-flex;
             align-items: center;
@@ -267,7 +267,7 @@
             color: var(--red);
         }
 
-        /* ── секция дня ── */
+        /* секция дня */
         .day-block {
             margin-bottom: 24px;
         }
@@ -285,7 +285,7 @@
             color: var(--muted);
         }
 
-        /* ── уведомление ── */
+        /* уведомление */
         .alert {
             padding: 10px 16px;
             border-radius: 8px;
@@ -305,7 +305,7 @@
             border: 1px solid #1a5c34;
         }
 
-        /* ── пусто ── */
+        /* пусто */
         .empty {
             color: var(--muted);
             font-size: 14px;
@@ -313,18 +313,18 @@
             text-align: center;
         }
 
-        /* ── инлайн-редактирование ── */
+        /* инлайн-редактирование */
         .edit-row td {
             background: var(--surface2);
         }
 
-        /* ── итог дня ── */
+        /* итог дня */
         .day-total {
             font-size: 13px;
             color: var(--muted);
         }
 
-        /* ── модалка ── */
+        /* модалка */
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -378,7 +378,7 @@
             <button class="tab" :class="{active: tab==='transactions'}" @click="tab='transactions'">Транзакции</button>
         </div>
 
-        <!-- ══════════════ КАТЕГОРИИ ══════════════ -->
+        <!-- КАТЕГОРИИ -->
         <div v-if="tab==='categories'" class="page">
 
             <div class="card">
@@ -450,7 +450,7 @@
             </div>
         </div>
 
-        <!-- ══════════════ СТАТЬИ РАСХОДОВ ══════════════ -->
+        <!--  СТАТЬИ РАСХОДОВ -->
         <div v-if="tab==='expenseItems'" class="page">
 
             <div class="card">
@@ -527,7 +527,7 @@
             </div>
         </div>
 
-        <!-- ══════════════ ТРАНЗАКЦИИ ══════════════ -->
+        <!-- ТРАНЗАКЦИИ -->
         <div v-if="tab==='transactions'" class="page">
 
             <!-- форма добавления -->
@@ -611,19 +611,19 @@
             setup() {
                 const tab = ref('categories');
 
-                // ── данные ──
+                // данные
                 const categories = ref([]);
                 const expenseItems = ref([]);
                 const transactions = ref([]);
 
-                // ── сообщения ──
+                // сообщения
                 const msg = ref({ cat: null, item: null, tx: null });
                 function showMsg(key, ok, text) {
                     msg.value[key] = { ok, text };
                     setTimeout(() => { msg.value[key] = null; }, 3500);
                 }
 
-                // ── загрузка ──
+                // загрузка
                 async function loadCategories() {
                     const r = await fetch(`${API}/Categories`);
                     categories.value = await r.json();
@@ -643,7 +643,7 @@
                     await loadTransactions();
                 });
 
-                // ════ КАТЕГОРИИ ════
+                // КАТЕГОРИИ
                 const newCat = ref({ name: '', monthlyBudget: 0, isActive: true });
                 const editCat = ref(null);
 
@@ -696,7 +696,7 @@
                     }
                 }
 
-                // ════ СТАТЬИ ════
+                // СТАТЬИ
                 const newItem = ref({ name: '', categoryId: 0, isActive: true });
                 const editItem = ref(null);
                 const activeItems = computed(() => expenseItems.value.filter(i => i.isActive));
@@ -749,7 +749,7 @@
                     }
                 }
 
-                // ════ ТРАНЗАКЦИИ ════
+                // ТРАНЗАКЦИИ
                 const today = new Date();
                 const filterYear = ref(today.getFullYear());
                 const filterMonth = ref(today.getMonth() + 1);
@@ -817,7 +817,7 @@
                     return Object.values(map).sort((a, b) => b.date.localeCompare(a.date));
                 });
 
-                // ════ УТИЛИТЫ ════
+                //УТИЛИТЫ
                 function formatMoney(v) {
                     return Number(v).toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ₽';
                 }
