@@ -1,0 +1,855 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Личные финансы</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700&family=Golos+Text:wght@400;500&display=swap" rel="stylesheet" />
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #0f1117;
+            --surface: #181c27;
+            --surface2: #1f2435;
+            --border: #2a3045;
+            --accent: #4f8ef7;
+            --accent2: #7c5cfc;
+            --text: #e8eaf2;
+            --muted: #7a80a0;
+            --green: #22c55e;
+            --yellow: #eab308;
+            --red: #ef4444;
+            --radius: 12px;
+        }
+
+        html, body {
+            width: 100%;
+        }
+
+        body {
+            font-family: 'Golos Text', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* ── шапка ── */
+        header {
+            padding: 22px 40px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface);
+            width: 100%;
+        }
+
+            header .logo {
+                font-family: 'Unbounded', sans-serif;
+                font-size: 18px;
+                font-weight: 700;
+                background: linear-gradient(90deg, var(--accent), var(--accent2));
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+
+        /* ── вкладки ── */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            padding: 0 40px;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface);
+        }
+
+        .tab {
+            font-family: 'Golos Text', sans-serif;
+            font-size: 15px;
+            font-weight: 500;
+            padding: 14px 28px;
+            border: none;
+            background: transparent;
+            color: var(--muted);
+            cursor: pointer;
+            border-radius: var(--radius) var(--radius) 0 0;
+            border-bottom: 2px solid transparent;
+            transition: color .2s, border-color .2s;
+        }
+
+            .tab.active {
+                color: var(--accent);
+                border-bottom-color: var(--accent);
+            }
+
+            .tab:hover:not(.active) {
+                color: var(--text);
+            }
+
+        /* ── основная область ── */
+        .page {
+            padding: 28px 40px;
+            width: 100%;
+        }
+
+        /* ── карточка ── */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        /* ── форма ── */
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+            .field label {
+                font-size: 12px;
+                color: var(--muted);
+            }
+
+        input, select, textarea {
+            font-family: 'Golos Text', sans-serif;
+            font-size: 15px;
+            padding: 9px 14px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            outline: none;
+            transition: border-color .2s;
+        }
+
+            input:focus, select:focus, textarea:focus {
+                border-color: var(--accent);
+            }
+
+        textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        /* ── кнопки ── */
+        .btn {
+            font-family: 'Golos Text', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 9px 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: opacity .15s, transform .1s;
+        }
+
+            .btn:hover {
+                opacity: .88;
+            }
+
+            .btn:active {
+                transform: scale(.97);
+            }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .btn-danger {
+            background: #2d1515;
+            color: var(--red);
+            border: 1px solid #5a2020;
+        }
+
+        .btn-ghost {
+            background: var(--surface2);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-sm {
+            padding: 5px 12px;
+            font-size: 13px;
+        }
+
+        /* ── таблица ── */
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 15px;
+        }
+
+        th {
+            font-family: 'Unbounded', sans-serif;
+            font-size: 11px;
+            text-align: left;
+            padding: 12px 16px;
+            color: var(--muted);
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 13px 16px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: var(--surface2);
+        }
+
+        /* ── badge isActive ── */
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge-on {
+            background: #0d2e1a;
+            color: var(--green);
+        }
+
+        .badge-off {
+            background: #2d1515;
+            color: var(--red);
+        }
+
+        /* ── стикер дня ── */
+        .sticker {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .sticker-green {
+            background: #0d2e1a;
+            color: var(--green);
+        }
+
+        .sticker-yellow {
+            background: #2d2500;
+            color: var(--yellow);
+        }
+
+        .sticker-red {
+            background: #2d1515;
+            color: var(--red);
+        }
+
+        /* ── секция дня ── */
+        .day-block {
+            margin-bottom: 24px;
+        }
+
+        .day-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .day-title {
+            font-family: 'Unbounded', sans-serif;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        /* ── уведомление ── */
+        .alert {
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .alert-error {
+            background: #2d1515;
+            color: var(--red);
+            border: 1px solid #5a2020;
+        }
+
+        .alert-ok {
+            background: #0d2e1a;
+            color: var(--green);
+            border: 1px solid #1a5c34;
+        }
+
+        /* ── пусто ── */
+        .empty {
+            color: var(--muted);
+            font-size: 14px;
+            padding: 24px 0;
+            text-align: center;
+        }
+
+        /* ── инлайн-редактирование ── */
+        .edit-row td {
+            background: var(--surface2);
+        }
+
+        /* ── итог дня ── */
+        .day-total {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        /* ── модалка ── */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .modal {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px;
+            min-width: 340px;
+            max-width: 480px;
+            width: 100%;
+        }
+
+            .modal h3 {
+                font-family: 'Unbounded', sans-serif;
+                font-size: 15px;
+                margin-bottom: 18px;
+            }
+
+            .modal .form-col {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .modal .actions {
+                display: flex;
+                gap: 8px;
+                justify-content: flex-end;
+                margin-top: 20px;
+            }
+    </style>
+</head>
+<body>
+    <div id="app">
+
+        <header>
+            <div class="logo">💰 Личные финансы</div>
+        </header>
+
+        <div class="tabs">
+            <button class="tab" :class="{active: tab==='categories'}" @click="tab='categories'">Категории</button>
+            <button class="tab" :class="{active: tab==='expenseItems'}" @click="tab='expenseItems'">Статьи расходов</button>
+            <button class="tab" :class="{active: tab==='transactions'}" @click="tab='transactions'">Транзакции</button>
+        </div>
+
+        <!-- ══════════════ КАТЕГОРИИ ══════════════ -->
+        <div v-if="tab==='categories'" class="page">
+
+            <div class="card">
+                <div class="form-row">
+                    <div class="field">
+                        <label>Название</label>
+                        <input v-model="newCat.name" placeholder="Например: Питание" style="width:200px" />
+                    </div>
+                    <div class="field">
+                        <label>Месячный бюджет, ₽</label>
+                        <input v-model.number="newCat.monthlyBudget" type="number" min="0" placeholder="0" style="width:150px" />
+                    </div>
+                    <div class="field">
+                        <label>Активна</label>
+                        <select v-model="newCat.isActive" style="width:100px">
+                            <option :value="true">Да</option>
+                            <option :value="false">Нет</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" @click="createCategory">+ Добавить</button>
+                </div>
+            </div>
+
+            <div v-if="msg.cat" :class="['alert', msg.cat.ok ? 'alert-ok' : 'alert-error']">{{ msg.cat.text }}</div>
+
+            <div class="card">
+                <div v-if="categories.length === 0" class="empty">Категорий пока нет</div>
+                <div v-else class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Название</th>
+                                <th>Бюджет</th>
+                                <th>Статус</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template v-for="c in categories" :key="c.id">
+                                <!-- обычная строка -->
+                                <tr v-if="editCat?.id !== c.id">
+                                    <td>{{ c.name }}</td>
+                                    <td>{{ formatMoney(c.monthlyBudget) }}</td>
+                                    <td><span :class="['badge', c.isActive ? 'badge-on' : 'badge-off']">{{ c.isActive ? 'Активна' : 'Не активна' }}</span></td>
+                                    <td style="display:flex;gap:6px">
+                                        <button class="btn btn-ghost btn-sm" @click="startEditCat(c)">✏️ Изм.</button>
+                                        <button class="btn btn-danger btn-sm" @click="deleteCategory(c.id)">🗑 Удалить</button>
+                                    </td>
+                                </tr>
+                                <!-- строка редактирования -->
+                                <tr v-else class="edit-row">
+                                    <td><input v-model="editCat.name" style="width:180px" /></td>
+                                    <td><input v-model.number="editCat.monthlyBudget" type="number" style="width:120px" /></td>
+                                    <td>
+                                        <select v-model="editCat.isActive" style="width:110px">
+                                            <option :value="true">Активна</option>
+                                            <option :value="false">Не активна</option>
+                                        </select>
+                                    </td>
+                                    <td style="display:flex;gap:6px">
+                                        <button class="btn btn-primary btn-sm" @click="saveCategory">💾 Сохранить</button>
+                                        <button class="btn btn-ghost btn-sm" @click="editCat=null">Отмена</button>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════ СТАТЬИ РАСХОДОВ ══════════════ -->
+        <div v-if="tab==='expenseItems'" class="page">
+
+            <div class="card">
+                <div class="form-row">
+                    <div class="field">
+                        <label>Название</label>
+                        <input v-model="newItem.name" placeholder="Например: Обед" style="width:200px" />
+                    </div>
+                    <div class="field">
+                        <label>Категория</label>
+                        <select v-model.number="newItem.categoryId" style="width:180px">
+                            <option disabled value="0">— выберите —</option>
+                            <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name }}</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Активна</label>
+                        <select v-model="newItem.isActive" style="width:100px">
+                            <option :value="true">Да</option>
+                            <option :value="false">Нет</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" @click="createItem">+ Добавить</button>
+                </div>
+            </div>
+
+            <div v-if="msg.item" :class="['alert', msg.item.ok ? 'alert-ok' : 'alert-error']">{{ msg.item.text }}</div>
+
+            <div class="card">
+                <div v-if="expenseItems.length === 0" class="empty">Статей пока нет</div>
+                <div v-else class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Название</th>
+                                <th>Категория</th>
+                                <th>Статус</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template v-for="it in expenseItems" :key="it.id">
+                                <tr v-if="editItem?.id !== it.id">
+                                    <td>{{ it.name }}</td>
+                                    <td>{{ it.category?.name ?? '—' }}</td>
+                                    <td><span :class="['badge', it.isActive ? 'badge-on' : 'badge-off']">{{ it.isActive ? 'Активна' : 'Не активна' }}</span></td>
+                                    <td style="display:flex;gap:6px">
+                                        <button class="btn btn-ghost btn-sm" @click="startEditItem(it)">✏️ Изм.</button>
+                                        <button class="btn btn-danger btn-sm" @click="deleteItem(it.id)">🗑 Удалить</button>
+                                    </td>
+                                </tr>
+                                <tr v-else class="edit-row">
+                                    <td><input v-model="editItem.name" style="width:180px" /></td>
+                                    <td>
+                                        <select v-model.number="editItem.categoryId" style="width:160px">
+                                            <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name }}</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select v-model="editItem.isActive" style="width:110px">
+                                            <option :value="true">Активна</option>
+                                            <option :value="false">Не активна</option>
+                                        </select>
+                                    </td>
+                                    <td style="display:flex;gap:6px">
+                                        <button class="btn btn-primary btn-sm" @click="saveItem">💾 Сохранить</button>
+                                        <button class="btn btn-ghost btn-sm" @click="editItem=null">Отмена</button>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════ ТРАНЗАКЦИИ ══════════════ -->
+        <div v-if="tab==='transactions'" class="page">
+
+            <!-- форма добавления -->
+            <div class="card">
+                <div class="form-row">
+                    <div class="field">
+                        <label>Дата</label>
+                        <input v-model="newTx.date" type="date" style="width:150px" />
+                    </div>
+                    <div class="field">
+                        <label>Сумма, ₽</label>
+                        <input v-model.number="newTx.amount" type="number" min="0.01" step="0.01" placeholder="0.00" style="width:130px" />
+                    </div>
+                    <div class="field">
+                        <label>Статья (активные)</label>
+                        <select v-model.number="newTx.expenseItemId" style="width:200px">
+                            <option disabled value="0">— выберите —</option>
+                            <option v-for="it in activeItems" :key="it.id" :value="it.id">{{ it.name }} ({{ it.category?.name }})</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Комментарий</label>
+                        <input v-model="newTx.comment" placeholder="Необязательно" style="width:180px" />
+                    </div>
+                    <button class="btn btn-primary" @click="createTransaction">+ Добавить</button>
+                </div>
+            </div>
+
+            <div v-if="msg.tx" :class="['alert', msg.tx.ok ? 'alert-ok' : 'alert-error']">{{ msg.tx.text }}</div>
+
+            <!-- фильтр по месяцу -->
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+                <button class="btn btn-ghost btn-sm" @click="prevMonth">← Пред.</button>
+                <span style="font-family:'Unbounded',sans-serif;font-size:13px;">{{ monthLabel }}</span>
+                <button class="btn btn-ghost btn-sm" @click="nextMonth">След. →</button>
+            </div>
+
+            <!-- список по дням -->
+            <div v-if="groupedByDay.length === 0" class="empty">Транзакций за этот месяц нет</div>
+
+            <div v-for="day in groupedByDay" :key="day.date" class="day-block">
+                <div class="day-header">
+                    <span class="day-title">{{ formatDate(day.date) }}</span>
+                    <span :class="['sticker', stickerClass(day.total)]">
+                        {{ stickerIcon(day.total) }} {{ formatMoney(day.total) }}
+                    </span>
+                </div>
+                <div class="card" style="padding:0;overflow:hidden">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Статья</th>
+                                <th>Категория</th>
+                                <th>Сумма</th>
+                                <th>Комментарий</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="tx in day.transactions" :key="tx.id">
+                                <td>{{ tx.expenseItem?.name ?? '—' }}</td>
+                                <td>{{ tx.expenseItem?.category?.name ?? '—' }}</td>
+                                <td>{{ formatMoney(tx.amount) }}</td>
+                                <td style="color:var(--muted)">{{ tx.comment || '—' }}</td>
+                                <td><button class="btn btn-danger btn-sm" @click="deleteTransaction(tx.id)">🗑</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const API = 'https://localhost:7076/api';
+
+        const { createApp, ref, computed, onMounted } = Vue;
+
+        createApp({
+            setup() {
+                const tab = ref('categories');
+
+                // ── данные ──
+                const categories = ref([]);
+                const expenseItems = ref([]);
+                const transactions = ref([]);
+
+                // ── сообщения ──
+                const msg = ref({ cat: null, item: null, tx: null });
+                function showMsg(key, ok, text) {
+                    msg.value[key] = { ok, text };
+                    setTimeout(() => { msg.value[key] = null; }, 3500);
+                }
+
+                // ── загрузка ──
+                async function loadCategories() {
+                    const r = await fetch(`${API}/Categories`);
+                    categories.value = await r.json();
+                }
+                async function loadItems() {
+                    const r = await fetch(`${API}/ExpenseItems`);
+                    expenseItems.value = await r.json();
+                }
+                async function loadTransactions() {
+                    const r = await fetch(`${API}/Transactions/byMonth/${filterYear.value}/${filterMonth.value}`);
+                    transactions.value = await r.json();
+                }
+
+                onMounted(async () => {
+                    await loadCategories();
+                    await loadItems();
+                    await loadTransactions();
+                });
+
+                // ════ КАТЕГОРИИ ════
+                const newCat = ref({ name: '', monthlyBudget: 0, isActive: true });
+                const editCat = ref(null);
+
+                async function createCategory() {
+                    if (!newCat.value.name.trim()) return showMsg('cat', false, 'Введите название категории');
+                    const r = await fetch(`${API}/Categories`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(newCat.value)
+                    });
+                    if (r.ok) {
+                        newCat.value = { name: '', monthlyBudget: 0, isActive: true };
+                        await loadCategories();
+                        showMsg('cat', true, 'Категория добавлена');
+                    } else {
+                        const e = await r.json();
+                        showMsg('cat', false, e.title || 'Ошибка при создании');
+                    }
+                }
+
+                function startEditCat(c) {
+                    editCat.value = { ...c };
+                }
+
+                async function saveCategory() {
+                    const r = await fetch(`${API}/Categories/${editCat.value.id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(editCat.value)
+                    });
+                    if (r.ok) {
+                        editCat.value = null;
+                        await loadCategories();
+                        showMsg('cat', true, 'Категория сохранена');
+                    } else {
+                        const e = await r.json().catch(() => ({}));
+                        showMsg('cat', false, e.title || 'Ошибка при сохранении');
+                    }
+                }
+
+                async function deleteCategory(id) {
+                    if (!confirm('Удалить категорию?')) return;
+                    const r = await fetch(`${API}/Categories/${id}`, { method: 'DELETE' });
+                    if (r.ok) {
+                        await loadCategories();
+                        showMsg('cat', true, 'Категория удалена');
+                    } else {
+                        const txt = await r.text();
+                        showMsg('cat', false, txt || 'Нельзя удалить категорию');
+                    }
+                }
+
+                // ════ СТАТЬИ ════
+                const newItem = ref({ name: '', categoryId: 0, isActive: true });
+                const editItem = ref(null);
+                const activeItems = computed(() => expenseItems.value.filter(i => i.isActive));
+
+                async function createItem() {
+                    if (!newItem.value.name.trim()) return showMsg('item', false, 'Введите название статьи');
+                    if (!newItem.value.categoryId) return showMsg('item', false, 'Выберите категорию');
+                    const r = await fetch(`${API}/ExpenseItems`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(newItem.value)
+                    });
+                    if (r.ok) {
+                        newItem.value = { name: '', categoryId: 0, isActive: true };
+                        await loadItems();
+                        showMsg('item', true, 'Статья добавлена');
+                    } else {
+                        const e = await r.json().catch(() => ({}));
+                        showMsg('item', false, e.title || 'Ошибка при создании');
+                    }
+                }
+
+                function startEditItem(it) { editItem.value = { ...it }; }
+
+                async function saveItem() {
+                    const r = await fetch(`${API}/ExpenseItems/${editItem.value.id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(editItem.value)
+                    });
+                    if (r.ok) {
+                        editItem.value = null;
+                        await loadItems();
+                        showMsg('item', true, 'Статья сохранена');
+                    } else {
+                        const e = await r.json().catch(() => ({}));
+                        showMsg('item', false, e.title || 'Ошибка при сохранении');
+                    }
+                }
+
+                async function deleteItem(id) {
+                    if (!confirm('Удалить статью?')) return;
+                    const r = await fetch(`${API}/ExpenseItems/${id}`, { method: 'DELETE' });
+                    if (r.ok) {
+                        await loadItems();
+                        showMsg('item', true, 'Статья удалена');
+                    } else {
+                        const txt = await r.text();
+                        showMsg('item', false, txt || 'Нельзя удалить статью');
+                    }
+                }
+
+                // ════ ТРАНЗАКЦИИ ════
+                const today = new Date();
+                const filterYear = ref(today.getFullYear());
+                const filterMonth = ref(today.getMonth() + 1);
+
+                const monthLabel = computed(() => {
+                    const d = new Date(filterYear.value, filterMonth.value - 1);
+                    return d.toLocaleString('ru-RU', { month: 'long', year: 'numeric' });
+                });
+
+                function prevMonth() {
+                    if (filterMonth.value === 1) { filterMonth.value = 12; filterYear.value--; }
+                    else filterMonth.value--;
+                    loadTransactions();
+                }
+                function nextMonth() {
+                    if (filterMonth.value === 12) { filterMonth.value = 1; filterYear.value++; }
+                    else filterMonth.value++;
+                    loadTransactions();
+                }
+
+                const todayStr = today.toISOString().slice(0, 10);
+                const newTx = ref({ date: todayStr, amount: '', expenseItemId: 0, comment: '' });
+
+                async function createTransaction() {
+                    if (!newTx.value.date) return showMsg('tx', false, 'Укажите дату');
+                    if (!newTx.value.amount || newTx.value.amount <= 0) return showMsg('tx', false, 'Укажите сумму');
+                    if (!newTx.value.expenseItemId) return showMsg('tx', false, 'Выберите статью расхода');
+                    const r = await fetch(`${API}/Transactions`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            date: newTx.value.date,
+                            amount: newTx.value.amount,
+                            expenseItemId: newTx.value.expenseItemId,
+                            comment: newTx.value.comment || null
+                        })
+                    });
+                    if (r.ok) {
+                        newTx.value = { date: todayStr, amount: '', expenseItemId: 0, comment: '' };
+                        await loadTransactions();
+                        showMsg('tx', true, 'Транзакция добавлена');
+                    } else {
+                        const txt = await r.text();
+                        showMsg('tx', false, txt || 'Ошибка при создании транзакции');
+                    }
+                }
+
+                async function deleteTransaction(id) {
+                    if (!confirm('Удалить транзакцию?')) return;
+                    const r = await fetch(`${API}/Transactions/${id}`, { method: 'DELETE' });
+                    if (r.ok) {
+                        await loadTransactions();
+                        showMsg('tx', true, 'Транзакция удалена');
+                    }
+                }
+
+                // группировка по дням
+                const groupedByDay = computed(() => {
+                    const map = {};
+                    for (const tx of transactions.value) {
+                        if (!map[tx.date]) map[tx.date] = { date: tx.date, transactions: [], total: 0 };
+                        map[tx.date].transactions.push(tx);
+                        map[tx.date].total += Number(tx.amount);
+                    }
+                    return Object.values(map).sort((a, b) => b.date.localeCompare(a.date));
+                });
+
+                // ════ УТИЛИТЫ ════
+                function formatMoney(v) {
+                    return Number(v).toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ₽';
+                }
+
+                function formatDate(d) {
+                    return new Date(d + 'T00:00:00').toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+                }
+
+                function stickerClass(total) {
+                    if (total < 500) return 'sticker-green';
+                    if (total <= 2000) return 'sticker-yellow';
+                    return 'sticker-red';
+                }
+                function stickerIcon(total) {
+                    if (total < 500) return '🟢';
+                    if (total <= 2000) return '🟡';
+                    return '🔴';
+                }
+
+                return {
+                    tab,
+                    categories, expenseItems, transactions,
+                    msg,
+                    newCat, editCat, createCategory, startEditCat, saveCategory, deleteCategory,
+                    newItem, editItem, activeItems, createItem, startEditItem, saveItem, deleteItem,
+                    newTx, filterYear, filterMonth, monthLabel,
+                    prevMonth, nextMonth, createTransaction, deleteTransaction,
+                    groupedByDay,
+                    formatMoney, formatDate, stickerClass, stickerIcon,
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
