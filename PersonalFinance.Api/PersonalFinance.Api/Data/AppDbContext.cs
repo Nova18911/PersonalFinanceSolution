@@ -36,7 +36,7 @@ namespace PersonalFinance.Api.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Связь «Статья расходов → Категория»: многие к одному.
+            // Связь «Статья расходов - Категория»: многие к одному.
             // Удаление категории запрещено при наличии связанных статей расходов.
             modelBuilder.Entity<ExpenseItem>()
                 .HasOne(e => e.Category)
@@ -44,7 +44,7 @@ namespace PersonalFinance.Api.Data
                 .HasForeignKey(e => e.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Связь «Транзакция → Статья расходов»: многие к одному.
+            // Связь «Транзакция - Статья расходов»: многие к одному.
             // Удаление статьи расходов запрещено при наличии связанных транзакций.
             modelBuilder.Entity<Transaction>()
                 .HasOne(t => t.ExpenseItem)

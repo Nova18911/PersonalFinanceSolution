@@ -34,9 +34,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors();              // ← добавить (было зарегистрировано, но не включено)
-app.UseDefaultFiles();      // ← добавить (отдаёт index.html по умолчанию)
-app.UseStaticFiles();       // ← добавить (раздаёт файлы из wwwroot)
+app.UseCors();
+app.UseDefaultFiles();
+app.UseStaticFiles();
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
